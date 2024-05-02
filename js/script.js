@@ -204,29 +204,13 @@ window.addEventListener('DOMContentLoaded', () => {
     //         });
     //     });
 
-    getResource('http://localhost:3000/menu')
-        .then(data => createCard(data));
-
-    function createCard(data) {
-        data.forEach(({img, altimg, title, descr, price}) => {
-            const element = document.createElement('div');
-
-            element.classList.add('menu__item');
-
-            element.innerHTML = `
-                <img src=${img} alt=${altimg}>
-                <h3 class="menu__item-subtitle">${title}</h3>
-                <div class="menu__item-descr">${descr}</div>
-                <div class="menu__item-divider"></div>
-                <div class="menu__item-price">
-                    <div class="menu__item-cost">Цена:</div>
-                    <div class="menu__item-total"><span>${price}</span> грн/день</div>
-                </div>
-            `;
-
-            document.querySelector('.menu .container').append(element);
+    axios.get('http://localhost:3000/menu')
+        .then(data => {
+            data.data.forEach(({img, altimg, title, descr, price}) => {
+                new MenuCard(img, altimg, title, descr, price, '.menu .container').render();
+            });
         });
-    }
+    
 
     // Forms
 
@@ -306,4 +290,54 @@ window.addEventListener('DOMContentLoaded', () => {
             closeModal();
         }, 4000);
     }
+
+    // Slider
+
+    const slides = document.querySelectorAll('.offer__slide'),
+          btn_prev = document.querySelector('.offer__slider-prev'),
+          btn_next = document.querySelector('.offer__slider-next'),
+          current_slide = document.querySelector('#current'),
+          total_slides = document.querySelector('#total');
+    
+    let current = 1;
+
+    total_slides.innerHTML = numFormat(slides.length);
+    showSlide(current);
+
+    function showSlide(current) {
+        if (current > slides.length) {
+            current = 1;
+        }
+        
+        if (current < 1) {
+            current = slides.length;
+        }
+
+        current_slide.innerHTML = numFormat(current);
+        slides.forEach((slide, i) => {
+            slide.classList.remove('show');
+            slide.classList.add('hide');
+        });
+
+        slides[current - 1].classList.remove('hide');
+        slides[current - 1].classList.add('show');
+    }
+
+    function plusSlide(n) {
+        showSlide(current += n)
+    }
+
+    function numFormat(num) {
+        if (num < 10) {
+            return `0${num}`
+        }
+    }
+
+    btn_prev.addEventListener('click', () => {
+        plusSlide(-1);
+    });
+
+    btn_next.addEventListener('click', () => {
+        plusSlide(1);
+    })
 });
